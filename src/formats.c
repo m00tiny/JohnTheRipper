@@ -1623,6 +1623,11 @@ void *fmt_default_salt(char *ciphertext)
 	return ciphertext;
 }
 
+struct fmt_data *fmt_default_data(char *ciphertext)
+{
+	return NULL;
+}
+
 char *fmt_default_source(char *source, void *binary)
 {
 	return source;
@@ -1699,6 +1704,10 @@ int fmt_default_dyna_salt_hash(void *salt)
 }
 
 void fmt_default_set_salt(void *salt)
+{
+}
+
+void fmt_default_set_data(struct fmt_data *data)
 {
 }
 

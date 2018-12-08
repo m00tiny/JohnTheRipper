@@ -21,7 +21,7 @@
  * (tunable cost parameters)
  * (format signatures, #14)
  */
-#define FMT_MAIN_VERSION 14	/* change if structure fmt_main changes */
+#define FMT_MAIN_VERSION 15	/* change if structure fmt_main changes */
 
 /*
  * fmt_main is declared for real further down this file, but we refer to it in
@@ -113,6 +113,8 @@ struct db_salt;
 #define FMT_OMP				0
 #define FMT_OMP_BAD			0
 #endif
+/* Non-hash format. If used, binary_size must be 0 */
+#define FMT_BLOB			0x04000000
 /* We've already warned the user about hashes of this type being present */
 #define FMT_WARNED			0x80000000
 
@@ -125,6 +127,21 @@ extern int fmt_raw_len;
 struct fmt_tests {
 	char *ciphertext, *plaintext;
 	char *fields[10];
+};
+
+/*
+ * Flags for fmt_data.
+ */
+/* Blob portion is alloced, so needs to be freed when done with it. */
+#define FMT_DATA_ALLOC			0x00000001
+
+/*
+ * Variable size data for non-hashes (formerly stored in "salt").
+ */
+struct fmt_data {
+	size_t size;
+	unsigned int flags;
+	void *blob;
 };
 
 /*
@@ -243,6 +260,8 @@ struct fmt_methods {
 /* Converts an ASCII salt to its internal representation */
 	void *(*salt)(char *ciphertext);
 
+/* Converts an ASCII non-hash data blob to a fmt_data struct */
+	struct fmt_data *data(char *ciphertext);
 /*
  * These functions return the value of a tunable cost parameter
  * for a given salt.
@@ -275,6 +294,9 @@ struct fmt_methods {
 
 /* Sets a salt for the crypt_all() method */
 	void (*set_salt)(void *salt);
+
+/* Sets a data blob for the crypt_all() method */
+	void (*set_data)(struct fmt_data *data);
 
 /* Sets a plaintext, with index from 0 to fmt_params.max_keys_per_crypt - 1.
  * The string is NUL-terminated, but set_key() may over-read it until up to
